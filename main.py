@@ -1,19 +1,38 @@
-def require_role(role):
-    def decorator(func):
-        def wapper(*arge, **kwargs):
-            user_role = kwargs.get("role", "guest")
-            if user_role != role:
-                print(f"Access denied! Need role: {role}")
-                return
-            print(f"Access granted for role: {role}")
-            return func(*arge, **kwargs)
-        return wapper
-    return decorator
+class App:
+    def __init__(self):
+        self.routes = {}
+        return
 
-@require_role("admin")
-def delete_user(user_id, role="guest"):
-    print(f"Deleting user {user_id}")
+    def get(self, path):
+        def decorator(func):
+            # 注册：把函数和路径绑定
+            self.routes[path] = func
+            return func
+
+        return decorator
+
+    def call(self, path, *args, **kwargs):
+        if path in self.routes:
+            return self.routes[path](*args, **kwargs)
+        else:
+            return f"404 Not Found: {path}"
+        return
+
+
+app = App()
+
+
+@app.get("/hello")
+def hello(name="World"):
+    return f"Hello, {name}!"
+
+
+@app.get("/bye")
+def bye():
     return
 
-delete_user(47)
-delete_user(47, role="admin")
+
+print(app.call("/hello", "Luna"))
+print(app.call("/bye"))
+print(app.call("/unkown"))
+
