@@ -1,38 +1,46 @@
-class App:
+class app:
     def __init__(self):
         self.routes = {}
         return
 
-    def get(self, path):
+    def route(self, path, method="GET"):
         def decorator(func):
-            # 注册：把函数和路径绑定
-            self.routes[path] = func
+            key = (method.upper(), path)
+            self.routes[key] = func
             return func
 
         return decorator
 
-    def call(self, path, *args, **kwargs):
-        if path in self.routes:
-            return self.routes[path](*args, **kwargs)
+    def get(self, path):
+        return self.route(path, method="GET")
+
+    def post(self, path):
+        return self.route(path, method="POST")
+
+    def call(self, path, method="GET", *args, **kwargs):
+        key = (method.upper(), path)
+        if key in self.routes:
+            return self.routes[key](*args, **kwargs)
         else:
             return f"404 Not Found: {path}"
-        return
 
 
-app = App()
+app = app()
 
 
+# 使用装饰器注册路由
 @app.get("/hello")
 def hello(name="World"):
     return f"Hello, {name}!"
 
 
-@app.get("/bye")
-def bye():
-    return
+@app.post("/echo")
+def echo(data):
+    return f"Echo: {data}"
 
 
-print(app.call("/hello", "Luna"))
-print(app.call("/bye"))
-print(app.call("/unkown"))
-
+# 模拟请求
+print(app.call("/hello", method="GET", name="Luna"))
+print(app.call("/echo", method="POST", data="Some message"))
+print(app.call("/echo", method="GET"))  # 错误方法
+print(app.call("/notfound", method="GET"))
